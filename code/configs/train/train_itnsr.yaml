@@ -1,0 +1,71 @@
+train_dataset:
+  dataset:
+    name: image-folder
+    args:
+      root_path: /home/lab532/Shen/Dataset/datasets/SCI1K/HR
+      repeat: 20 # 20 for bz 16
+      cache: bin
+  wrapper:
+    name: sr-implicit-downsampled
+    args:
+      inp_size: 48
+      scale_max: 4
+      scale_min: 1
+      augment: true
+      sample_q: 2304
+  batch_size: 16
+
+val_dataset:
+  dataset:
+    name: image-folder
+    args:
+      root_path:  /home/lab532/Shen/Dataset/datasets/benchmark/Test/X4/HR #
+      first_k: 10
+      repeat: 160
+      cache: bin
+  wrapper:
+    name: sr-implicit-downsampled
+    args:
+      inp_size: 48
+      scale_max: 4
+      scale_min: 1
+      sample_q: 2304
+  batch_size: 16
+
+data_norm:
+  inp: {sub: [0.5], div: [0.5]}
+  gt: {sub: [0.5], div: [0.5]}
+
+model:
+  name: ITNSR
+  args:
+    feat_unfold: True
+    local_ensemble: True
+    scale_token: True
+    encoder_spec:
+      name: rdn
+      args:
+        no_upsampling: true
+
+    imnet_spec:
+      name: mlp
+      args:
+        # in_dim: 1728
+        # out_dim: 3
+        hidden_list: [256,256,256,256]
+        act: 'gelu'
+
+optimizer:
+  name: adam
+  args:
+    lr: 2.e-4
+epoch_max: 1000
+multi_step_lr:
+  milestones: [100, 200, 400, 600, 800]
+  gamma: 0.5
+
+epoch_val: 1
+epoch_save: 100
+
+resume: ~
+pre_train: ~
