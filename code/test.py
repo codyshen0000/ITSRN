@@ -95,7 +95,7 @@ def eval_psnr(loader, model, data_norm=None, eval_type=None, eval_bsize=None,
 
 def calc_psnr(args, loader, model, data_norm=None, eval_type=None, eval_bsize=None,
               verbose=False, ):
-    root_dir = args.model.split('epoch-')[0]
+    root_dir = args.model.split('.pth')[0]
     save_dir = os.path.join(root_dir, f'{args.name}-' + 'Results')
     os.makedirs(save_dir, exist_ok=True)
     model.eval()
@@ -137,10 +137,10 @@ def calc_psnr(args, loader, model, data_norm=None, eval_type=None, eval_bsize=No
         start = time.time()
         if eval_bsize is None:
             with torch.no_grad():
-                pred = model(inp, batch['coord'], batch['cell'])
+                pred = model(inp, batch['coord'], batch['scale'])
         else:
             pred = batched_predict(model, inp,
-                batch['coord'], batch['cell'], eval_bsize)
+                batch['coord'], batch['scale'], eval_bsize)
         pred = pred * gt_div + gt_sub
         pred.clamp_(0, 1)
         torch.cuda.synchronize()
