@@ -12,12 +12,10 @@ import datasets
 import models
 import utils
 from torchvision import transforms
-
-
 import time
 
 
-def batched_predict(model, inp, coord, cell, bsize):
+def batched_predict(model, inp, coord, scale, bsize):
     with torch.no_grad():
         model.gen_feat(inp)
         n = coord.shape[1]
@@ -25,7 +23,7 @@ def batched_predict(model, inp, coord, cell, bsize):
         preds = []
         while ql < n:
             qr = min(ql + bsize, n)
-            pred = model.query_rgb(coord[:, ql: qr, :], cell[:, ql: qr, :])
+            pred = model.query_rgb(coord[:, ql: qr, :], scale[:, ql: qr, :])
             preds.append(pred)
             ql = qr
         pred = torch.cat(preds, dim=1)
@@ -69,10 +67,10 @@ def eval_psnr(loader, model, data_norm=None, eval_type=None, eval_bsize=None,
         inp = (batch['inp'] - inp_sub) / inp_div
         if eval_bsize is None:
             with torch.no_grad():
-                pred = model(inp, batch['coord'], batch['cell'])
+                pred = model(inp, batch['coord'], batch['scale'])
         else:
             pred = batched_predict(model, inp,
-                batch['coord'], batch['cell'], eval_bsize)
+                batch['coord'], batch['scale'], eval_bsize)
         pred = pred * gt_div + gt_sub
         pred.clamp_(0, 1)
 
@@ -133,6 +131,7 @@ def calc_psnr(args, loader, model, data_norm=None, eval_type=None, eval_bsize=No
             batch[k] = v.cuda()
         # pdb.set_trace()
         inp = (batch['inp'] - inp_sub) / inp_div
+        
         torch.cuda.synchronize()
         start = time.time()
         if eval_bsize is None:
