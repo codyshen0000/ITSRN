@@ -20,9 +20,9 @@ class ITNSR(nn.Module):
         self.encoder = models.make(encoder_spec)
         if imnet_spec is not None:
             if self.feat_unfold:
-                self.imnet = models.make(imnet_spec,args={'out_dim':self.encoder.out_dim*9*3})
+                self.imnet = models.make(imnet_spec,args={'in_dim':4, 'out_dim':self.encoder.out_dim*9*3})
             else:
-                self.imnet = models.make(imnet_spec,args={'out_dim':self.encoder.out_dim*3})
+                self.imnet = models.make(imnet_spec,args={'in_dim':4, 'out_dim':self.encoder.out_dim*3})
         else:
             self.imnet = None
         
